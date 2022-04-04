@@ -3,3 +3,5 @@ websockets
 asyncio
 rel
 pillow
+pyserial
+keyboard
