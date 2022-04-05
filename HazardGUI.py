@@ -143,16 +143,17 @@ class App:
             self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
             # Add labels
             # print(self.sensors.sensordict)
-            tempL =Label(self.canvas,text = "Temperature: " + self.sensors.sensordict["temp"] + " degrees" + " (" + self.sensors.dangerdict["tempText"]+")", bg=self.sensors.dangerdict["tempColour"]) 
-            self.canvas.create_window(85, 10, window=tempL) 
+            tempL =Label(self.canvas,text = "Temperature: " + self.sensors.sensordict["temp"] + " degrees" + " (" + self.sensors.dangerdict["tempText"]+")", bg=self.sensors.dangerdict["tempColour"])
+            tempL.place(x = 5, y = 5) 
             cpmL = Label(self.canvas,text = "Counts Per Minute: " + self.sensors.sensordict["cpm"] + " (" + self.sensors.dangerdict["cpmText"]+")", bg=self.sensors.dangerdict["cpmColour"])
-            self.canvas.create_window(80, 55, window=cpmL) 
+            cpmL.place(x = 5, y = 45)
             lightL = Label(self.canvas,text = "Light Level: " + self.sensors.sensordict["light"])
-            self.canvas.create_window(50, 95, window=lightL) 
+            lightL.place(x = 5, y = 85)
             maxTL = Label(self.canvas,text = "Maximum temperature: " + self.sensors.maxTemp + " (" + self.sensors.maxdangerdict["tempText"]+")", bg=self.sensors.maxdangerdict["tempColour"])
-            self.canvas.create_window(93, 135, window=maxTL) 
-            maxCPML = Label(self.canvas,text = "Maximum CPM: " + self.sensors.maxCPM + " (" + self.sensors.maxdangerdict["cpmText"]+")", bg=self.sensors.maxdangerdict["cpmColour"])   
-            self.canvas.create_window(73, 175, window=maxCPML) 
+            maxTL.place(x = 5, y = 125)
+            maxCPML = Label(self.canvas,text = "Maximum CPM: " + self.sensors.maxCPM + " (" + self.sensors.maxdangerdict["cpmText"]+")", bg=self.sensors.maxdangerdict["cpmColour"])
+            maxCPML.place(x = 5, y = 165)    
+ 
         self.window.after(self.delay, self.update)
  
  
