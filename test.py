@@ -24,33 +24,51 @@ class ZumoControl:
 
 class SensorInput:
     def __init__(self):
-        self.sensordict = {"cpm": '0', "temp": '0', "light": '0'}
+        self.sensordict = {"cpm": '0', "temp": '0', "light": 'light'}
         self.maxTemp = "0"
         self.lightLevel = "0"
         self.maxCPM = "0"
+        self.maxdangerdict = {"cpmText": "Safe", "cpmColour": "green", "tempText": "Safe", "tempColour": "green"}
         self.dangerdict = {"cpmText": "Safe", "cpmColour": "green", "tempText": "Safe", "tempColour": "green"}
     def setDangerLevels(self):
-        if self.maxCPM >= 50 and self.maxCPM <= 100:
+        if int(self.maxCPM) >= 50 and int(self.maxCPM) <= 200:
+            self.maxdangerdict["cpmText"] = "Warning"
+            self.maxdangerdict["cpmColour"] = "yellow"
+        elif int(self.maxCPM) < 50 :
+            self.maxdangerdict["cpmText"] = "Safe"
+            self.maxdangerdict["cpmColour"] = "green"
+        elif int(self.maxCPM) > 200 :
+            self.maxdangerdict["cpmText"] = "Danger"
+            self.maxdangerdict["cpmColour"] = "red"
+        
+        if int(self.maxTemp) >= 25 and int(self.maxTemp) <= 39:
+            self.maxdangerdict["tempText"] = "Warning"
+            self.maxdangerdict["tempColour"] = "yellow"
+        elif int(self.maxTemp) > 40 :
+            self.maxdangerdict["tempText"] = "Danger"
+            self.maxdangerdict["tempColour"] = "red"
+
+        if int(self.sensordict["cpm"]) >= 50 and int(self.sensordict["cpm"]):
             self.dangerdict["cpmText"] = "Warning"
-            self.dangerdict["cpmColour"] = "amber"
-        elif self.maxCPM < 50 :
+            self.dangerdict["cpmColour"] = "yellow"
+        elif int(self.sensordict["cpm"]) < 50 :
             self.dangerdict["cpmText"] = "Safe"
             self.dangerdict["cpmColour"] = "green"
-        elif self.maxCPM > 100 :
+        elif int(self.sensordict["cpm"]) > 200 :
             self.dangerdict["cpmText"] = "Danger"
             self.dangerdict["cpmColour"] = "red"
         
-        if self.maxTemp >= 25 and self.maxTemp <= 39:
+        if int(self.sensordict["temp"]) >= 25 and int(self.sensordict["cpm"]) <= 39:
             self.dangerdict["tempText"] = "Warning"
-            self.dangerdict["tempColour"] = "amber"
-        elif self.maxCPM < 25 :
-            self.dangerdict["tempText"] = "Safe"
-            self.dangerdict["tempColour"] = "green"
-        elif self.maxCPM > 40 :
+            self.dangerdict["tempColour"] = "yellow"
+        elif int(self.sensordict["temp"]) > 40 :
             self.dangerdict["tempText"] = "Danger"
             self.dangerdict["tempColour"] = "red"
-        
+        else:
+            self.dangerdict["tempText"] = "Safe"
+            self.dangerdict["tempColour"] = "green"
 
+            
 
     async def values(self, websocket):
         async for message in websocket:
@@ -60,6 +78,12 @@ class SensorInput:
                 self.maxCPM = obj["cpm"]
             if int(obj["temp"]) > int(self.maxTemp):
                 self.maxTemp = obj["temp"]
+            if int(obj["light"]) >= 80:
+                self.sensordict["light"] = "LIGHT"
+            else:
+                self.sensordict["light"] = "DARK"
+
+            self.setDangerLevels()
             
     async def main(self):
         async with websockets.serve(self.values, "", 5000, ping_interval=None):
@@ -113,17 +137,17 @@ class App:
     def update(self):
          # Get a frame from the video source
         ret, frame = self.vid.get_frame()
- 
+        self.canvas.delete("all")
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
             self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
             # Add labels
             # print(self.sensors.sensordict)
-            Label(self.canvas,text = "Temperature: " + self.sensors.sensordict["temp"] + " degrees").place(x = 5, y = 5)  
-            Label(self.canvas,text = "Counts Per Minute: " + self.sensors.sensordict["cpm"]).place(x = 5, y = 45)
+            Label(self.canvas,text = "Temperature: " + self.sensors.sensordict["temp"] + " degrees" + " (" + self.sensors.dangerdict["tempText"]+")", bg=self.sensors.dangerdict["tempColour"]).place(x = 5, y = 5)  
+            Label(self.canvas,text = "Counts Per Minute: " + self.sensors.sensordict["cpm"] + " (" + self.sensors.dangerdict["cpmText"]+")", bg=self.sensors.dangerdict["cpmColour"]).place(x = 5, y = 45)
             Label(self.canvas,text = "Light Level: " + self.sensors.sensordict["light"]).place(x = 5, y = 85)
-            Label(self.canvas,text = "Maximum temperature: " + self.sensors.maxTemp + " (" + self.sensors.dangerdict["tempText"]+")", bg=self.sensors.dangerdict["tempColour"]).place(x = 5, y = 125)
-            Label(self.canvas,text = "Maximum CPM: " + self.sensors.maxCPM + " (" + self.sensors.dangerdict["cpmText"]+")", bg=self.sensors.dangerdict["cpmColour"]).place(x = 5, y = 165)   
+            Label(self.canvas,text = "Maximum temperature: " + self.sensors.maxTemp + " (" + self.sensors.maxdangerdict["tempText"]+")", bg=self.sensors.maxdangerdict["tempColour"]).place(x = 5, y = 125)
+            Label(self.canvas,text = "Maximum CPM: " + self.sensors.maxCPM + " (" + self.sensors.maxdangerdict["cpmText"]+")", bg=self.sensors.maxdangerdict["cpmColour"]).place(x = 5, y = 165)   
  
         self.window.after(self.delay, self.update)
  
