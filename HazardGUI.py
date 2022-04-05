@@ -58,7 +58,7 @@ class SensorInput:
             self.dangerdict["cpmText"] = "Danger"
             self.dangerdict["cpmColour"] = "red"
         
-        if int(self.sensordict["temp"]) >= 25 and int(self.sensordict["cpm"]) <= 39:
+        if int(self.sensordict["temp"]) >= 25 and int(self.sensordict["temp"]) <= 39:
             self.dangerdict["tempText"] = "Warning"
             self.dangerdict["tempColour"] = "yellow"
         elif int(self.sensordict["temp"]) > 40 :
