@@ -48,7 +48,7 @@ class SensorInput:
             self.maxdangerdict["tempText"] = "Danger"
             self.maxdangerdict["tempColour"] = "red"
 
-        if int(self.sensordict["cpm"]) >= 50 and int(self.sensordict["cpm"]):
+        if int(self.sensordict["cpm"]) >= 50 and int(self.sensordict["cpm"]) <=200:
             self.dangerdict["cpmText"] = "Warning"
             self.dangerdict["cpmColour"] = "yellow"
         elif int(self.sensordict["cpm"]) < 50 :
@@ -97,6 +97,7 @@ class SensorInput:
 class App:
     def __init__(self, window, window_title, video_source=0):
         self.window = window
+        self.text = tkinter.StringVar()
         self.window.title(window_title)
         self.video_source = video_source
         #start thread to send zumo
@@ -120,7 +121,26 @@ class App:
         # Button that lets the user take a snapshot
         self.btn_snapshot=tkinter.Button(window, text="Snapshot", width=50, command=self.snapshot)
         self.btn_snapshot.pack(anchor=tkinter.CENTER, expand=True)
+        self.tempText = tkinter.StringVar()
         
+        self.tempL = tkinter.Label(self.canvas,textvariable= self.tempText, bg=self.sensors.dangerdict["tempColour"])
+        self.tempL.place(x = 5, y = 5)
+        self.cpmText = tkinter.StringVar()
+        
+        self.cpmL = tkinter.Label(self.canvas,textvariable= self.cpmText, bg=self.sensors.dangerdict["cpmColour"])
+        self.cpmL.place(x = 5, y = 45)
+        self.lightText = tkinter.StringVar()
+        
+        self.lightL = tkinter.Label(self.canvas, textvariable=self.lightText)
+        self.lightL.place(x = 5, y = 85)
+        self.maxTempText = tkinter.StringVar()
+        
+        self.maxTL = tkinter.Label(self.canvas,textvariable= self.maxTempText , bg=self.sensors.maxdangerdict["tempColour"])
+        self.maxTL.place(x = 5, y = 125)
+        self.maxCPMText = tkinter.StringVar()
+        
+        self.maxCPML = tkinter.Label(self.canvas,textvariable=self.maxCPMText , bg=self.sensors.maxdangerdict["cpmColour"])
+        self.maxCPML.place(x = 5, y = 165)  
          # After it is called once, the update method will be automatically called every delay milliseconds
         self.delay = 1
         self.update()
@@ -137,22 +157,21 @@ class App:
     def update(self):
          # Get a frame from the video source
         ret, frame = self.vid.get_frame()
-        self.canvas.delete("all")
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
             self.canvas.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
             # Add labels
             # print(self.sensors.sensordict)
-            tempL =Label(self.canvas,text = "Temperature: " + self.sensors.sensordict["temp"] + " degrees" + " (" + self.sensors.dangerdict["tempText"]+")", bg=self.sensors.dangerdict["tempColour"])
-            tempL.place(x = 5, y = 5) 
-            cpmL = Label(self.canvas,text = "Counts Per Minute: " + self.sensors.sensordict["cpm"] + " (" + self.sensors.dangerdict["cpmText"]+")", bg=self.sensors.dangerdict["cpmColour"])
-            cpmL.place(x = 5, y = 45)
-            lightL = Label(self.canvas,text = "Light Level: " + self.sensors.sensordict["light"])
-            lightL.place(x = 5, y = 85)
-            maxTL = Label(self.canvas,text = "Maximum temperature: " + self.sensors.maxTemp + " (" + self.sensors.maxdangerdict["tempText"]+")", bg=self.sensors.maxdangerdict["tempColour"])
-            maxTL.place(x = 5, y = 125)
-            maxCPML = Label(self.canvas,text = "Maximum CPM: " + self.sensors.maxCPM + " (" + self.sensors.maxdangerdict["cpmText"]+")", bg=self.sensors.maxdangerdict["cpmColour"])
-            maxCPML.place(x = 5, y = 165)    
+            self.tempText.set( "Temperature: " + self.sensors.sensordict["temp"] + " degrees" )
+            self.tempL.config(bg=self.sensors.dangerdict["tempColour"])
+            self.cpmText.set("Counts Per Minute: " + self.sensors.sensordict["cpm"])
+            self.cpmL.config(bg=self.sensors.dangerdict["cpmColour"])
+            self.lightText.set("Light Level: " + self.sensors.sensordict["light"])
+            self.maxTempText.set("Maximum temperature: " + self.sensors.maxTemp + " (" + self.sensors.maxdangerdict["tempText"]+")")
+            self.maxTL.config( bg=self.sensors.maxdangerdict["tempColour"])
+            self.maxCPMText.set("Maximum CPM: " + self.sensors.maxCPM + " (" + self.sensors.maxdangerdict["cpmText"]+")")
+            self.maxCPML.config(bg=self.sensors.maxdangerdict["cpmColour"])
+  
  
         self.window.after(self.delay, self.update)
  
