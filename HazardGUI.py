@@ -10,10 +10,19 @@ import websockets
 import asyncio
 import json
 
+'''
+    Class that creates a connection to a Zumo via the serial port on an Xbee
+'''
 class ZumoControl:
+    #Runs on object instantiation, creates a connection to an Xbee via the serial port
     def __init__(self):
         self.ser = serial.Serial("COM16", 9600, timeout=1)
-    
+    '''
+    Sends a movement input to the Zumo over the Xbee via pySerial
+
+            Parameters:
+                    self (obj): The current ZumoControl object
+    '''
     def keyworker(self):
         while True:
             key = keyboard.read_key()
@@ -21,7 +30,11 @@ class ZumoControl:
                 self.ser.write(key.encode())
             elif key !='w'  or  key != 'a' or key != 's' or key != 'd':
                 key = ''
-
+'''
+    Class that creates a WebSocket on port 5000 of the
+    local network. Will set its variables each time it 
+    recieves new sensor values.
+'''
 class SensorInput:
     def __init__(self):
         self.sensordict = {"cpm": '0', "temp": '0', "light": 'light'}
@@ -30,6 +43,12 @@ class SensorInput:
         self.maxCPM = "0"
         self.maxdangerdict = {"cpmText": "Safe", "cpmColour": "green", "tempText": "Safe", "tempColour": "green"}
         self.dangerdict = {"cpmText": "Safe", "cpmColour": "green", "tempText": "Safe", "tempColour": "green"}
+    '''
+        setDangerLevels function will set the dictionaries for the
+        Tkinter labels on the GUI. A text informing the user whether it is
+        safe depending on the current values held in the maxdangerdict and
+        dangerdict.
+    '''
     def setDangerLevels(self):
         if int(self.maxCPM) >= 50 and int(self.maxCPM) <= 200:
             self.maxdangerdict["cpmText"] = "Warning"
@@ -69,7 +88,13 @@ class SensorInput:
             self.dangerdict["tempColour"] = "green"
 
             
-
+    '''
+        values function takes in a websocket and will
+        run each time a new message is sent to the websocket via the
+        MKR 1010 Arduino. The new sensor values are set, and if a new
+        maximum sensor value is found it will update the variable for
+        the labels
+    '''
     async def values(self, websocket):
         async for message in websocket:
             obj = json.loads(message)
@@ -89,15 +114,24 @@ class SensorInput:
         async with websockets.serve(self.values, "", 5000, ping_interval=None):
             await asyncio.Future()
 
+    '''
+        start function starts the WebSocket server by running
+        main and setting up the server on localhost 5000.
+    '''
     def start(self):
         asyncio.run(self.main())
 
         
-        
+'''
+        class App is the main code that is ran at the start
+        of the python file. This sets up the connections to the
+        Zumo, IP Camera and the MKR 1010 Wi-Fi and renders the
+        information on the Tkinter and OpenCV GUI window
+'''   
 class App:
     def __init__(self, window, window_title, video_source=0):
+        #setup the tkinter and video sources
         self.window = window
-        self.text = tkinter.StringVar()
         self.window.title(window_title)
         self.video_source = video_source
         #start thread to send zumo
@@ -106,7 +140,7 @@ class App:
         self.zumothread = Thread(target=self.zumo.keyworker)
         self.zumothread.daemon = True
         self.zumothread.start()
-
+        # start the thread to run the WebSocket and get sensor input
         self.sensors = SensorInput()
         self.sensorthread = Thread(target=self.sensors.start)
         self.sensorthread.daemon = True
@@ -123,6 +157,7 @@ class App:
         self.btn_snapshot.pack(anchor=tkinter.CENTER, expand=True)
         self.tempText = tkinter.StringVar()
         
+        # Setup the label variables that will be updated with new sensor values
         self.tempL = tkinter.Label(self.canvas,textvariable= self.tempText, bg=self.sensors.dangerdict["tempColour"])
         self.tempL.place(x = 5, y = 5)
         self.cpmText = tkinter.StringVar()
